@@ -109,6 +109,17 @@ export function DropZone({onImagesLoaded}: DropZoneProps) {
           className="hidden"
         />
       </button>
+      <footer className="text-muted-foreground absolute bottom-4 text-xs">
+        by{' '}
+        <a
+          href="https://dafnik.me"
+          target="_blank"
+          rel="noreferrer"
+          className="text-foreground underline underline-offset-2"
+        >
+          Dafnik
+        </a>
+      </footer>
     </div>
   );
 }

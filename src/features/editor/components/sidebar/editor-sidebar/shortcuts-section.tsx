@@ -27,6 +27,17 @@ export function ShortcutsSection({shortcutsTooltip, onOpenShortcutsModal}: Short
           </kbd>
         </Button>
       </ShortcutTooltip>
+      <p className="text-muted-foreground mt-3 text-center text-xs">
+        by{' '}
+        <a
+          href="https://dafnik.me"
+          target="_blank"
+          rel="noreferrer"
+          className="text-foreground underline underline-offset-2"
+        >
+          Dafnik
+        </a>
+      </p>
     </div>
   );
 }

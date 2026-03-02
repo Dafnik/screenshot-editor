@@ -346,6 +346,18 @@ export function LibraryManager({
             </div>
           )}
         </section>
+
+        <footer className="text-muted-foreground pb-4 text-center text-xs">
+          by{' '}
+          <a
+            href="https://dafnik.me"
+            target="_blank"
+            rel="noreferrer"
+            className="text-foreground underline underline-offset-2"
+          >
+            Dafnik
+          </a>
+        </footer>
       </div>
     </div>
   );
