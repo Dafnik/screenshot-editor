@@ -1,13 +1,11 @@
 import {loadBlurTemplates} from '@/features/editor/state/blur-templates-storage';
-import {loadLegacySettingsOnce} from '@/features/editor/state/persistence';
-import {DEFAULT_SETTINGS} from '@/features/editor/state/types';
+import {DEFAULT_SETTINGS, type PersistedSettings} from '@/features/editor/state/types';
 import type {HistorySnapshot} from '@/features/editor/state/types';
 
-export function createBaseState() {
-  const migratedLegacySettings = loadLegacySettingsOnce();
+export function createBaseState(persistedSettings: Partial<PersistedSettings> = {}) {
   const initialSettings = {
     ...DEFAULT_SETTINGS,
-    ...migratedLegacySettings,
+    ...persistedSettings,
   };
   const initialBlurTemplates = loadBlurTemplates();
 

@@ -2,6 +2,7 @@ import {useEffect, useMemo, useRef} from 'react';
 import {useShallow} from 'zustand/react/shallow';
 import {getSplitHandlePoint} from '@/features/editor/lib/split-geometry';
 import {useEditorStore} from '@/features/editor/state/use-editor-store';
+import {DEFAULT_SETTINGS} from '@/features/editor/state/types';
 import {useCanvasRenderer} from '@/features/editor/hooks/use-canvas-renderer';
 import {useCanvasInteractions} from '@/features/editor/hooks/use-canvas-interactions';
 import {BlurOutlineOverlay} from './blur-outline-overlay';
@@ -74,7 +75,10 @@ export function EditorCanvasRoot({
     handlePointerCancel,
   } = useCanvasInteractions({canvasRef, containerRef});
 
-  const scale = zoom / 100;
+  const effectiveZoom = Number.isFinite(zoom)
+    ? Math.max(10, Math.min(500, zoom))
+    : DEFAULT_SETTINGS.zoom;
+  const scale = effectiveZoom / 100;
   const canvasWidth = imageWidth || 800;
   const canvasHeight = imageHeight || 600;
   const panRef = useRef({x: panX, y: panY});

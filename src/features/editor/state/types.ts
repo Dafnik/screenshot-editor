@@ -165,7 +165,15 @@ export interface ActionResult {
   error?: string;
 }
 
+export type EditorStoreData = DocumentSlice &
+  ToolSlice &
+  ViewportSlice &
+  InteractionSlice &
+  UiSlice &
+  HistorySlice;
+
 export interface EditorStoreActions {
+  dispatch: (event: import('./events').AppEvent) => void;
   initializeEditor: (payload: InitializeEditorPayload) => void;
   resetProject: () => void;
   resetSettingsToDefaults: () => void;
@@ -219,6 +227,8 @@ export interface EditorStoreActions {
   toggleShortcutsModal: () => void;
   openLightSelector: (payload: LightSelectorPayload) => void;
   resolveLightSelector: (selection: LightSelection) => void;
+  setDocumentImages: (image1: string, image2: string | null) => void;
+  setBlurStrokesTransient: (strokes: BlurStroke[]) => void;
   addSecondImage: (image: string) => void;
   removeSecondImage: () => void;
   pushHistorySnapshot: () => void;
@@ -226,13 +236,7 @@ export interface EditorStoreActions {
   redo: () => void;
 }
 
-export type EditorStoreState = DocumentSlice &
-  ToolSlice &
-  ViewportSlice &
-  InteractionSlice &
-  UiSlice &
-  HistorySlice &
-  EditorStoreActions;
+export type EditorStoreState = EditorStoreData & EditorStoreActions;
 
 export const DEFAULT_SETTINGS: PersistedSettings = {
   splitRatio: 50,

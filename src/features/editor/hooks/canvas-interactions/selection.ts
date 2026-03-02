@@ -15,7 +15,6 @@ import {
   type BlurBoxRect,
 } from '@/features/editor/lib/blur-box-geometry';
 import {useEditorStore} from '@/features/editor/state/use-editor-store';
-import {RESIZE_HANDLE_HIT_SIZE_PX} from './constants';
 import {
   areIndexListsEqual,
   findTopmostRectIndexAtPoint,
@@ -117,9 +116,7 @@ export function useSelectionInteractions({
       const changed = Math.abs(clampedDelta.x) > 1e-4 || Math.abs(clampedDelta.y) > 1e-4;
       session.changed = changed;
       if (!changed) {
-        useEditorStore.setState({
-          blurStrokes: session.initialStrokes,
-        });
+        useEditorStore.getState().setBlurStrokesTransient(session.initialStrokes);
         return;
       }
 
@@ -129,11 +126,9 @@ export function useSelectionInteractions({
         return translateStroke(stroke, clampedDelta.x, clampedDelta.y);
       });
 
-      useEditorStore.setState({
-        blurStrokes: nextStrokes,
-        isDrawing: false,
-        currentStroke: null,
-      });
+      const store = useEditorStore.getState();
+      store.setBlurStrokesTransient(nextStrokes);
+      store.cancelStroke();
     },
     [canvasRef],
   );
@@ -176,9 +171,7 @@ export function useSelectionInteractions({
 
       session.changed = !areRectsEqual(session.singleBaseRect, nextRect);
       if (!session.changed) {
-        useEditorStore.setState({
-          blurStrokes: session.initialStrokes,
-        });
+        useEditorStore.getState().setBlurStrokesTransient(session.initialStrokes);
         return;
       }
 
@@ -190,11 +183,9 @@ export function useSelectionInteractions({
         nextRect,
       );
 
-      useEditorStore.setState({
-        blurStrokes: nextStrokes,
-        isDrawing: false,
-        currentStroke: null,
-      });
+      const store = useEditorStore.getState();
+      store.setBlurStrokesTransient(nextStrokes);
+      store.cancelStroke();
     },
     [canvasRef],
   );
@@ -202,7 +193,7 @@ export function useSelectionInteractions({
   const clearSelectInteraction = useCallback((options?: {cancelChanges?: boolean}) => {
     const session = selectTransformSessionRef.current;
     if (options?.cancelChanges && session?.changed) {
-      useEditorStore.setState({blurStrokes: session.initialStrokes});
+      useEditorStore.getState().setBlurStrokesTransient(session.initialStrokes);
     }
 
     marqueeStartRef.current = null;

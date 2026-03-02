@@ -3,9 +3,10 @@ import {defineConfig} from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-export default defineConfig({
+export default defineConfig(() => ({
   plugins: [
     react({
+      // Keep dev behavior stable; enable compiler only for production builds.
       babel: {
         plugins: ['babel-plugin-react-compiler'],
       },
@@ -17,4 +18,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-});
+}));

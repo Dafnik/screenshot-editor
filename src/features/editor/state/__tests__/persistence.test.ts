@@ -1,76 +1,97 @@
-import {describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {create} from 'zustand';
 import {
-  getPersistedSettingsSlice,
-  LEGACY_MIGRATION_KEY,
-  loadLegacySettingsOnce,
-} from '@/features/editor/state/persistence';
+  decodePersistedState,
+  encodePersistedState,
+  sanitizePersistedSettings,
+} from '@/features/editor/state/storage/codec';
+import {
+  clearPersistedSettings,
+  getHydrationStatus,
+  hydratePersistedSettings,
+  persistSettingsSlice,
+} from '@/features/editor/state/storage/hydration';
+import {installPersistedSettingsSubscription} from '@/features/editor/state/storage/persist-subscription';
+import {SETTINGS_STORAGE_KEY} from '@/features/editor/state/storage/schema';
+import {DEFAULT_SETTINGS, type EditorStoreState} from '@/features/editor/state/types';
 import {useEditorStore} from '@/features/editor/state/use-editor-store';
 
-describe('editor persistence helpers', () => {
-  it('loads legacy settings once and marks migration', () => {
-    localStorage.removeItem(LEGACY_MIGRATION_KEY);
-    localStorage.setItem('editor-split-ratio', '66');
-    localStorage.setItem('editor-split-direction', 'horizontal');
-    localStorage.setItem('editor-brush-radius', '31');
-    localStorage.setItem('editor-brush-strength', '12');
-    localStorage.setItem('editor-blur-type', 'pixelated');
-    localStorage.setItem('editor-active-tool', 'blur');
-    localStorage.setItem('editor-light-image-side', 'right');
-    localStorage.setItem('editor-zoom', '140');
-
-    const loaded = loadLegacySettingsOnce();
-    expect(loaded.splitRatio).toBe(66);
-    expect(loaded.splitDirection).toBe('horizontal');
-    expect(loaded.brushRadius).toBe(31);
-    expect(loaded.brushStrength).toBe(12);
-    expect(loaded.blurType).toBe('pixelated');
-    expect(loaded.activeTool).toBe('blur');
-    expect(loaded.lightImageSide).toBe('right');
-    expect(loaded.zoom).toBe(140);
-
-    const second = loadLegacySettingsOnce();
-    expect(second).toEqual({});
+describe('editor settings persistence', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    clearPersistedSettings();
   });
 
-  it('maps legacy select tool to drag tool', () => {
-    localStorage.removeItem(LEGACY_MIGRATION_KEY);
-    localStorage.setItem('editor-active-tool', 'select');
-
-    const loaded = loadLegacySettingsOnce();
-    expect(loaded.activeTool).toBe('drag');
-  });
-
-  it('partializes only persisted settings fields', () => {
-    const persisted = getPersistedSettingsSlice({
-      splitRatio: 55,
-      splitDirection: 'vertical',
-      blurStrokeShape: 'brush',
-      brushRadius: 20,
-      brushStrength: 9,
-      blurType: 'normal',
-      activeTool: 'drag',
-      lightImageSide: 'left',
-      zoom: 120,
+  it('sanitizes invalid values to safe defaults', () => {
+    const sanitized = sanitizePersistedSettings({
+      splitRatio: Number.NaN,
+      splitDirection: 'bogus',
+      blurStrokeShape: 'invalid',
+      brushRadius: Number.POSITIVE_INFINITY,
+      brushStrength: -4,
+      blurType: 'invalid',
+      activeTool: 'invalid',
+      lightImageSide: 'invalid',
+      zoom: 0,
     });
 
-    expect(persisted).toEqual({
-      splitRatio: 55,
-      splitDirection: 'vertical',
-      blurStrokeShape: 'brush',
-      brushRadius: 20,
-      brushStrength: 9,
-      blurType: 'normal',
-      activeTool: 'drag',
-      lightImageSide: 'left',
-      zoom: 120,
+    expect(sanitized).toEqual({
+      ...DEFAULT_SETTINGS,
+      splitRatio: 50,
+      brushStrength: 1,
+      zoom: 10,
     });
   });
 
-  it('migrates persisted v1 select tool to drag', () => {
-    const migrate = useEditorStore.persist.getOptions().migrate;
-    expect(migrate).toBeTypeOf('function');
+  it('encodes and decodes persisted settings payload', () => {
+    const encoded = encodePersistedState({
+      ...DEFAULT_SETTINGS,
+      splitRatio: 66,
+      zoom: 130,
+    });
+    const decoded = decodePersistedState(encoded);
+    expect(decoded.ok).toBe(true);
+    if (decoded.ok) {
+      expect(decoded.settings.splitRatio).toBe(66);
+      expect(decoded.settings.zoom).toBe(130);
+    }
+  });
 
-    const migrated = migrate?.({activeTool: 'select'} as never, 1) as {activeTool: string};
-    expect(migrated.activeTool).toBe('drag');
+  it('hard-resets storage when payload is invalid', () => {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, '{bad');
+    const hydrated = hydratePersistedSettings();
+    expect(hydrated).toEqual({});
+    expect(localStorage.getItem(SETTINGS_STORAGE_KEY)).toBeNull();
+    expect(getHydrationStatus().status).toBe('hydrated');
+  });
+
+  it('hydrates saved settings from storage', () => {
+    persistSettingsSlice({...DEFAULT_SETTINGS, brushRadius: 37, zoom: 140});
+    const hydrated = hydratePersistedSettings();
+    expect(hydrated.brushRadius).toBe(37);
+    expect(hydrated.zoom).toBe(140);
+  });
+
+  it('persists debounced settings updates via subscription', () => {
+    vi.useFakeTimers();
+
+    const store = create<EditorStoreState>(() => useEditorStore.getState());
+    const unsubscribe = installPersistedSettingsSubscription(store, {debounceMs: 50});
+
+    store.setState({...store.getState(), splitRatio: 77});
+    vi.advanceTimersByTime(10);
+    store.setState({...store.getState(), splitRatio: 78});
+    vi.advanceTimersByTime(60);
+
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    expect(raw).toBeTruthy();
+    const decoded = raw ? decodePersistedState(raw) : null;
+    expect(decoded && decoded.ok).toBe(true);
+    if (decoded && decoded.ok) {
+      expect(decoded.settings.splitRatio).toBe(78);
+    }
+
+    unsubscribe();
+    vi.useRealTimers();
   });
 });

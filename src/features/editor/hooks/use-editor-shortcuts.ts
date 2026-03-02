@@ -130,12 +130,9 @@ export function useEditorShortcuts() {
         );
         if (nextBlurStrokes.length === store.blurStrokes.length) return;
 
-        useEditorStore.setState({
-          blurStrokes: nextBlurStrokes,
-          selectedStrokeIndices: [],
-          isDrawing: false,
-          currentStroke: null,
-        });
+        store.setBlurStrokesTransient(nextBlurStrokes);
+        store.setSelectedStrokeIndices([]);
+        store.cancelStroke();
         store.pushHistorySnapshot();
         return;
       }

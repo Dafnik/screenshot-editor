@@ -3,6 +3,7 @@ import {afterEach, beforeEach} from 'vitest';
 import {cleanup} from '@testing-library/react';
 import {useEditorStore} from '@/features/editor/state/use-editor-store';
 import {saveBlurTemplates} from '@/features/editor/state/blur-templates-storage';
+import {clearPersistedSettings} from '@/features/editor/state/storage/hydration';
 
 class ResizeObserverMock {
   observe() {}
@@ -14,15 +15,16 @@ globalThis.ResizeObserver = ResizeObserverMock as typeof ResizeObserver;
 
 beforeEach(() => {
   localStorage.clear();
-  useEditorStore.persist.clearStorage();
+  clearPersistedSettings();
   saveBlurTemplates([]);
   useEditorStore.getState().resetProject();
   useEditorStore.getState().resetSettingsToDefaults();
-  useEditorStore.setState({
+  useEditorStore.getState().dispatch({
+    type: 'BLUR_TEMPLATES_SET',
     blurTemplates: [],
     selectedTemplateId: null,
-    showSplitViewSidebar: false,
   });
+  useEditorStore.getState().setSplitViewSidebarOpen(false);
 });
 
 afterEach(() => {

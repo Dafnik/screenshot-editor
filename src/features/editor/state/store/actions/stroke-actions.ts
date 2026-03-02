@@ -1,4 +1,5 @@
 import type {EditorStoreActions} from '@/features/editor/state/types';
+import {DEFAULT_SETTINGS} from '@/features/editor/state/types';
 import type {StoreContext} from '@/features/editor/state/store/types';
 
 export function createStrokeActions({
@@ -33,8 +34,15 @@ export function createStrokeActions({
     setBrushStrength: (brushStrength) => set({brushStrength}),
     setBlurType: (blurType) => set({blurType}),
     setBlurStrokeShape: (blurStrokeShape) => set({blurStrokeShape}),
-    setZoom: (value) => set({zoom: Math.max(10, Math.min(500, value))}),
-    setPan: (panX, panY) => set({panX, panY}),
+    setZoom: (value) =>
+      set({
+        zoom: Number.isFinite(value) ? Math.max(10, Math.min(500, value)) : DEFAULT_SETTINGS.zoom,
+      }),
+    setPan: (panX, panY) =>
+      set({
+        panX: Number.isFinite(panX) ? panX : 0,
+        panY: Number.isFinite(panY) ? panY : 0,
+      }),
 
     updateBlurStrokesAtIndices: (indices, patch, options) => {
       const state = get();

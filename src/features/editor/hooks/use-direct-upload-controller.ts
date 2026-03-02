@@ -27,6 +27,9 @@ export function useDirectUploadController({
 }: UseDirectUploadControllerOptions) {
   const openLightSelector = useEditorStore((state) => state.openLightSelector);
   const resolveLightSelector = useEditorStore((state) => state.resolveLightSelector);
+  const setDocumentImages = useEditorStore((state) => state.setDocumentImages);
+  const setExportBaseName = useEditorStore((state) => state.setExportBaseName);
+  const pushHistorySnapshot = useEditorStore((state) => state.pushHistorySnapshot);
   const pendingSelectionResolver = useRef<((selection: LightSelection) => void) | null>(null);
   const primaryUploadBaseNameRef = useRef<string | null>(null);
 
@@ -138,25 +141,27 @@ export function useDirectUploadController({
           state.lightImageSide,
         );
 
-        useEditorStore.setState({
-          image1: ordered.image1,
-          image2: ordered.image2,
-          showSplitViewSidebar: true,
-        });
+        setDocumentImages(ordered.image1, ordered.image2);
         const derivedExportName = deriveSplitExportName(
           primaryUploadBaseNameRef.current ?? state.exportBaseName,
           fileName,
         );
         if (derivedExportName) {
-          useEditorStore.getState().setExportBaseName(derivedExportName);
+          setExportBaseName(derivedExportName);
         }
-        useEditorStore.getState().pushHistorySnapshot();
+        pushHistorySnapshot();
         setActiveEditorSource({mode: 'direct'});
       };
 
       void addSecond();
     },
-    [classifyPair, setActiveEditorSource],
+    [
+      classifyPair,
+      pushHistorySnapshot,
+      setActiveEditorSource,
+      setDocumentImages,
+      setExportBaseName,
+    ],
   );
 
   return {
