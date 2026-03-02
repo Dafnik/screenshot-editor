@@ -173,6 +173,8 @@ export function useAutoBlurController({
   );
 
   const handleAutoBlurEmails = useCallback(() => {
+    if (!image1) return;
+
     runAutoBlurDetection(
       () =>
         detectEmailsInImage({
@@ -189,6 +191,8 @@ export function useAutoBlurController({
   }, [image1, image2, imageHeight, imageWidth, runAutoBlurDetection, splitDirection, splitRatio]);
 
   const handleAutoBlurPhoneNumbers = useCallback(() => {
+    if (!image1) return;
+
     runAutoBlurDetection(
       () =>
         detectPhoneNumbersInImage({
@@ -215,7 +219,7 @@ export function useAutoBlurController({
   const handleAutoBlurCustomText = useCallback(
     (query: string) => {
       const trimmedQuery = query.trim();
-      if (!trimmedQuery) return;
+      if (!trimmedQuery || !image1) return;
 
       persistCustomText(trimmedQuery);
 

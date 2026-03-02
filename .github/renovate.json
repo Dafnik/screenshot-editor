@@ -1,0 +1,29 @@
+{
+  "baseBranches": ["main"],
+  "enabledManagers": ["github-actions", "npm"],
+  "semanticCommits": "enabled",
+  "semanticCommitScope": "",
+  "semanticCommitType": "build",
+  "commitBody": "See associated pull request for more information.",
+  "timezone": "Europe/Vienna",
+  "schedule": ["* 0-3 1 * *"],
+  "labels": ["dependencies"],
+  "assignees": ["Dafnik"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "minor-updates"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "groupName": "major-risky-update"
+    }
+  ],
+  "extends": [
+    "config:recommended",
+    ":pinVersions",
+    "npm:unpublishSafe",
+    ":preserveSemverRanges",
+    ":rebaseStalePrs"
+  ]
+}

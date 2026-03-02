@@ -342,7 +342,7 @@ export function useEditorShortcuts() {
 
       if (isLetterKey(event, 't')) {
         event.preventDefault();
-        const currentIndex = BLUR_TOOL_ORDER.indexOf(store.activeTool);
+        const currentIndex = BLUR_TOOL_ORDER.findIndex((tool) => tool === store.activeTool);
         const nextTool =
           currentIndex < 0
             ? BLUR_TOOL_ORDER[0]

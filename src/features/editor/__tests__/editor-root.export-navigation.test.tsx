@@ -141,13 +141,13 @@ describe('EditorRoot export return behavior', () => {
       createImageFile('light-1.png'),
       createImageFile('extra.png'),
     ]);
-    expect(await screen.findByText('Screenshot Library Pairing')).toBeInTheDocument();
+    expect(await screen.findByText('Screenshot Library')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', {name: 'Open pair'}));
     expect(await screen.findByText('Mock Editor Layout')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', {name: 'Mock export and leave'}));
-    expect(await screen.findByText('Screenshot Library Pairing')).toBeInTheDocument();
+    expect(await screen.findByText('Screenshot Library')).toBeInTheDocument();
     expect(screen.getByText('Active: 0')).toBeInTheDocument();
     expect(screen.getByText('Done: 1')).toBeInTheDocument();
   });
@@ -193,7 +193,7 @@ describe('EditorRoot export return behavior', () => {
     const addInput = screen.getByTestId('library-add-screenshots-input') as HTMLInputElement;
     await user.upload(addInput, [createImageFile('dark-2.png'), createImageFile('light-2.png')]);
 
-    expect(await screen.findByText('Screenshot Library Pairing')).toBeInTheDocument();
+    expect(await screen.findByText('Screenshot Library')).toBeInTheDocument();
     expect(screen.getByText('Done: 1')).toBeInTheDocument();
     expect(screen.getByText('Active: 1')).toBeInTheDocument();
     expect(buildLibraryPairs).toHaveBeenCalledTimes(2);
