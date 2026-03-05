@@ -6,7 +6,6 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig(() => ({
   plugins: [
     react({
-      // Keep dev behavior stable; enable compiler only for production builds.
       babel: {
         plugins: ['babel-plugin-react-compiler'],
       },

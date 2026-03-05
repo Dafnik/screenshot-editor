@@ -25,6 +25,45 @@ const baseTemplate: BlurTemplate = {
 };
 
 describe('template panel integration', () => {
+  it('starts collapsed when there are no saved templates', () => {
+    useEditorStore.setState({
+      blurTemplates: [],
+      selectedTemplateId: null,
+      blurStrokes: [],
+    });
+
+    render(<BlurTemplatePanel />);
+
+    const trigger = screen.getByRole('button', {name: 'Blur Templates'});
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', {name: 'Create'})).not.toBeInTheDocument();
+  });
+
+  it('collapses and expands the blur template accordion', async () => {
+    const user = userEvent.setup();
+    useEditorStore.setState({
+      blurTemplates: [baseTemplate],
+      selectedTemplateId: null,
+      blurStrokes: [],
+      imageWidth: 100,
+      imageHeight: 100,
+    });
+
+    render(<BlurTemplatePanel />);
+
+    const trigger = screen.getByRole('button', {name: 'Blur Templates'});
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', {name: 'Create'})).toBeInTheDocument();
+
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', {name: 'Create'})).not.toBeInTheDocument();
+
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', {name: 'Create'})).toBeInTheDocument();
+  });
+
   it('always renders the template section in the left sidebar', () => {
     useEditorStore.setState({activeTool: 'blur'});
 

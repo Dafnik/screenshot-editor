@@ -55,13 +55,13 @@ export function SplitViewSidebar({onAddSecondImage}: SplitViewSidebarProps) {
     <aside
       data-testid="split-view-sidebar"
       className={cn(
-        'border-border h-full flex-shrink-0 overflow-y-auto transition-[width,border-color] duration-150',
+        'border-border h-full flex-shrink-0 overflow-x-hidden overflow-y-auto transition-[width,border-color] duration-150',
         showSplitViewSidebar ? 'w-72 border-l-2' : 'w-0 border-l-0',
       )}
       style={{background: 'oklch(var(--sidebar-background))'}}
       aria-hidden={!showSplitViewSidebar}
     >
-      <div className={cn(showSplitViewSidebar ? 'w-72' : 'pointer-events-none invisible w-72')}>
+      <div className={cn(showSplitViewSidebar ? 'w-full' : 'pointer-events-none invisible w-72')}>
         <SplitViewSection
           image2={image2}
           splitDirection={splitDirection}

@@ -117,12 +117,11 @@ export function EditorToolbar({isLibraryMode = false}: EditorToolbarProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="mr-1 h-7 gap-1.5 px-2.5 text-xs"
+          className="h-7 w-7"
           onClick={handleCenterCanvas}
           title="Center canvas"
         >
           <Fullscreen className="h-3.5 w-3.5" />
-          Center
         </Button>
 
         <ShortcutTooltip content={zoomStepTooltip}>

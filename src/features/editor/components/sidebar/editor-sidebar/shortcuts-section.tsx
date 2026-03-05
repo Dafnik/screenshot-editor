@@ -1,4 +1,4 @@
-import {Keyboard} from 'lucide-react';
+import {Github, Keyboard} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {formatShortcutById} from '@/features/editor/lib/shortcut-definitions';
 import {ShortcutTooltip} from './shortcut-tooltip';
@@ -27,17 +27,29 @@ export function ShortcutsSection({shortcutsTooltip, onOpenShortcutsModal}: Short
           </kbd>
         </Button>
       </ShortcutTooltip>
-      <p className="text-muted-foreground mt-3 text-center text-xs">
-        by{' '}
+      <div className="text-muted-foreground mt-3 flex items-center justify-between text-xs">
+        <p>
+          by{' '}
+          <a
+            href="https://dafnik.me"
+            target="_blank"
+            rel="noreferrer"
+            className="text-foreground underline underline-offset-2"
+          >
+            Dafnik
+          </a>{' '}
+          & AI
+        </p>
         <a
-          href="https://dafnik.me"
+          href="https://github.com/Dafnik/screenshot-editor"
           target="_blank"
           rel="noreferrer"
-          className="text-foreground underline underline-offset-2"
+          aria-label="GitHub repository"
+          className="text-foreground hover:text-foreground/80 transition-colors"
         >
-          Dafnik
+          <Github className="h-3.5 w-3.5" />
         </a>
-      </p>
+      </div>
     </div>
   );
 }
