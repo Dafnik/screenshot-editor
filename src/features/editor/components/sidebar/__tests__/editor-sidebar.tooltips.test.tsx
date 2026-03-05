@@ -20,20 +20,13 @@ function renderEditorLayout() {
 }
 
 describe('EditorSidebar shortcut tooltips', () => {
-  it('shows switch tool tooltip on tool label', async () => {
-    const user = userEvent.setup();
-    const {container} = renderEditorLayout();
-    const toolGrid = container.querySelector('[data-testid="tool-grid"]');
-    expect(toolGrid).toHaveClass('grid', 'grid-cols-2');
-    expect(screen.getByRole('button', {name: 'Blur'})).toBeInTheDocument();
+  it('renders the bottom tool pill with drag/select/blur buttons', () => {
+    renderEditorLayout();
 
-    const toolLabel = screen.getByText('Tool');
-    await user.hover(toolLabel);
-    expect(
-      await screen.findByRole('tooltip', {
-        name: formatShortcutTooltip('Switch tool', ['switch-tool']),
-      }),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('tool-pill')).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Drag'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Select'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Blur'})).toBeInTheDocument();
   });
 
   it('shows Alt + Mouseclick tooltip on drag tool', async () => {

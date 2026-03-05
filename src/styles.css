@@ -91,6 +91,11 @@ select {
   border-radius: 0;
 }
 
+.tool-pill,
+.tool-pill .tool-pill-button {
+  border-radius: 9999px;
+}
+
 input,
 textarea,
 select {

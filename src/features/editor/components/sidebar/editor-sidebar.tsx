@@ -6,7 +6,6 @@ import {useEditorStore} from '@/features/editor/state/use-editor-store';
 import {BlurTemplatePanel} from './blur-template-panel';
 import {BlurSettingsSection} from './editor-sidebar/blur-settings-section';
 import {ShortcutsSection} from './editor-sidebar/shortcuts-section';
-import {ToolSection} from './editor-sidebar/tool-section';
 
 interface EditorSidebarProps {
   selectedStrokeIndices: number[];
@@ -31,7 +30,6 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
   const showBlurOutlines = useEditorStore((state) => state.showBlurOutlines);
   const historyIndex = useEditorStore((state) => state.historyIndex);
 
-  const setActiveTool = useEditorStore((state) => state.setActiveTool);
   const setBlurType = useEditorStore((state) => state.setBlurType);
   const setBlurStrokeShape = useEditorStore((state) => state.setBlurStrokeShape);
   const setBrushRadius = useEditorStore((state) => state.setBrushRadius);
@@ -43,7 +41,6 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
   const setShowBlurOutlines = useEditorStore((state) => state.setShowBlurOutlines);
   const openShortcutsModal = useEditorStore((state) => state.openShortcutsModal);
 
-  const switchToolTooltip = formatShortcutTooltip('Switch tool', ['switch-tool']);
   const modeTooltip = 'Hold Shift to temporarily switch modes';
   const blurTypeTooltip = formatShortcutTooltip('Toggle blur type', ['toggle-blur-type']);
   const outlinesTooltip = formatShortcutTooltip('Toggle outlines', ['toggle-outlines']);
@@ -182,12 +179,6 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
       className="border-border flex h-full w-72 flex-shrink-0 flex-col overflow-y-auto border-r-2"
       style={{background: 'oklch(var(--sidebar-background))'}}
     >
-      <ToolSection
-        activeTool={activeTool}
-        switchToolTooltip={switchToolTooltip}
-        onSetActiveTool={setActiveTool}
-      />
-
       <BlurSettingsSection
         modeTooltip={modeTooltip}
         blurTypeTooltip={blurTypeTooltip}

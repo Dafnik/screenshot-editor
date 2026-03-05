@@ -1,4 +1,5 @@
 import {render, screen} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {describe, expect, it} from 'vitest';
 import {EditorLayout} from '@/features/editor/components/layout/editor-layout';
 import {useEditorStore} from '@/features/editor/state/use-editor-store';
@@ -40,5 +41,22 @@ describe('EditorLayout split-view sidebar rendering', () => {
     expect(
       screen.getByRole('button', {name: 'Set split direction to vertical'}),
     ).toBeInTheDocument();
+  });
+
+  it('switches active tools via the bottom tool pill', async () => {
+    const user = userEvent.setup();
+    useEditorStore.setState({activeTool: 'drag'});
+    renderEditorLayout();
+
+    expect(screen.getByTestId('tool-pill')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', {name: 'Select'}));
+    expect(useEditorStore.getState().activeTool).toBe('select');
+
+    await user.click(screen.getByRole('button', {name: 'Blur'}));
+    expect(useEditorStore.getState().activeTool).toBe('blur');
+
+    await user.click(screen.getByRole('button', {name: 'Drag'}));
+    expect(useEditorStore.getState().activeTool).toBe('drag');
   });
 });

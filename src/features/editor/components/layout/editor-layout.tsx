@@ -8,6 +8,7 @@ import {ShortcutsModal} from '@/features/editor/components/modals/shortcuts-moda
 import {EditorSidebar} from '@/features/editor/components/sidebar/editor-sidebar';
 import {SplitViewSidebar} from '@/features/editor/components/sidebar/split-view-sidebar';
 import {EditorToolbar} from '@/features/editor/components/toolbar/editor-toolbar';
+import {ToolPill} from './tool-pill';
 
 interface EditorLayoutProps {
   onAddSecondImage: (dataUrl: string, fileName: string | null) => void;
@@ -31,7 +32,7 @@ export function EditorLayout({
 
   return (
     <TooltipProvider delayDuration={0} skipDelayDuration={0}>
-      <div className="flex h-screen w-screen flex-col">
+      <div className="relative flex h-screen w-screen flex-col">
         <EditorToolbar isLibraryMode={isLibraryMode} />
 
         <div className="flex flex-1 overflow-hidden">
@@ -41,6 +42,10 @@ export function EditorLayout({
             onSelectedStrokeIndicesChange={setSelectedStrokeIndices}
           />
           <SplitViewSidebar onAddSecondImage={onAddSecondImage} />
+        </div>
+
+        <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 -translate-x-1/2">
+          <ToolPill />
         </div>
 
         <ExportModal canvasRef={canvasEl} onExportComplete={onExportComplete} />
