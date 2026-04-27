@@ -3,6 +3,23 @@ import type {DetectTextInImageOptions, DetectedTextMatch, OcrData, OcrWorker} fr
 
 export const OCR_LANG_PATH = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0';
 const OCR_SEGMENTATION_MODES = ['3', '11'] as const;
+const OCR_OUTPUT_FORMATS = {blocks: true};
+
+function normalizeOcrData(data: OcrData): OcrData {
+  const words = [...(data.words ?? [])];
+  const lines = [...(data.lines ?? [])];
+
+  for (const block of data.blocks ?? []) {
+    for (const paragraph of block.paragraphs ?? []) {
+      for (const line of paragraph.lines ?? []) {
+        lines.push(line);
+        words.push(...(line.words ?? []));
+      }
+    }
+  }
+
+  return {...data, words, lines};
+}
 
 export async function detectTextInImage(
   options: DetectTextInImageOptions,
@@ -48,8 +65,13 @@ export async function detectTextInImage(
         preserve_interword_spaces: '1',
       });
 
-      const result = await worker.recognize(canvas);
-      collector(result.data ?? {}, options.imageWidth, options.imageHeight, matches);
+      const result = await worker.recognize(canvas, {}, OCR_OUTPUT_FORMATS);
+      collector(
+        normalizeOcrData(result.data ?? {}),
+        options.imageWidth,
+        options.imageHeight,
+        matches,
+      );
 
       if (matches.length > 0) {
         break;

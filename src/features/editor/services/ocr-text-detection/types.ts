@@ -27,18 +27,32 @@ export interface OcrWord {
 }
 
 export interface OcrLine {
+  words?: OcrWord[];
   text?: unknown;
   bbox?: OcrWord['bbox'];
 }
 
+export interface OcrParagraph {
+  lines?: OcrLine[] | null;
+}
+
+export interface OcrBlock {
+  paragraphs?: OcrParagraph[] | null;
+}
+
 export interface OcrData {
+  blocks?: OcrBlock[] | null;
   words?: OcrWord[];
   lines?: OcrLine[];
 }
 
 export interface OcrWorker {
   setParameters: (params: Record<string, string>) => Promise<unknown>;
-  recognize: (image: HTMLCanvasElement) => Promise<{data?: OcrData}>;
+  recognize: (
+    image: HTMLCanvasElement,
+    options?: Record<string, unknown>,
+    output?: Record<string, boolean>,
+  ) => Promise<{data?: OcrData}>;
   terminate: () => Promise<unknown>;
 }
 

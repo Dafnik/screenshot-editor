@@ -111,6 +111,38 @@ describe('ocr text detection', () => {
     expect(terminateMock).toHaveBeenCalledTimes(1);
   });
 
+  it('requests block output and extracts nested Tesseract 7 word boxes', async () => {
+    recognizeMock.mockResolvedValue({
+      data: {
+        blocks: [
+          {
+            paragraphs: [
+              {
+                lines: [
+                  {
+                    text: 'Support@Example.com',
+                    bbox: {x0: 12, y0: 20, x1: 112, y1: 40},
+                    words: [{text: 'Support@Example.com', bbox: {x0: 12, y0: 20, x1: 112, y1: 40}}],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    const result = await detectEmailsInImage(baseOptions);
+
+    expect(result).toEqual([
+      {
+        text: 'support@example.com',
+        box: {x: 12, y: 20, width: 100, height: 20},
+      },
+    ]);
+    expect(recognizeMock).toHaveBeenCalledWith(expect.any(HTMLCanvasElement), {}, {blocks: true});
+  });
+
   it('falls back to sparse mode on email detection when first pass has no matches', async () => {
     recognizeMock
       .mockResolvedValueOnce({

@@ -10,9 +10,8 @@
     "noEmit": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "types": ["vite/client", "node", "vitest/globals"]
   },
