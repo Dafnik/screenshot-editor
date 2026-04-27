@@ -5,14 +5,12 @@ import type {BlurStrokeShape} from '@/features/editor/state/types';
 
 interface BlurModeToggleProps {
   modeTooltip: string;
-  canEditBlurMode: boolean;
   blurStrokeShape: BlurStrokeShape;
   onBlurStrokeShapeChange: (nextShape: BlurStrokeShape) => void;
 }
 
 export function BlurModeToggle({
   modeTooltip,
-  canEditBlurMode,
   blurStrokeShape,
   onBlurStrokeShapeChange,
 }: BlurModeToggleProps) {
@@ -24,12 +22,11 @@ export function BlurModeToggle({
       <div className="flex gap-1">
         <button
           type="button"
-          disabled={!canEditBlurMode}
           onClick={() => onBlurStrokeShapeChange('brush')}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
             blurStrokeShape === 'brush'
               ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:hover:bg-secondary'
+              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
           }`}
         >
           <Brush className="h-3 w-3" />
@@ -37,12 +34,11 @@ export function BlurModeToggle({
         </button>
         <button
           type="button"
-          disabled={!canEditBlurMode}
           onClick={() => onBlurStrokeShapeChange('box')}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
             blurStrokeShape === 'box'
               ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:hover:bg-secondary'
+              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
           }`}
         >
           <Square className="h-3 w-3" />

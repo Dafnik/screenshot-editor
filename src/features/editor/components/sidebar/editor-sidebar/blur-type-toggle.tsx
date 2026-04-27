@@ -5,14 +5,12 @@ import type {BlurType} from '@/features/editor/state/types';
 
 interface BlurTypeToggleProps {
   blurTypeTooltip: string;
-  canEditBlurType: boolean;
   displayedBlurType: BlurType;
   onBlurTypeChange: (nextType: BlurType) => void;
 }
 
 export function BlurTypeToggle({
   blurTypeTooltip,
-  canEditBlurType,
   displayedBlurType,
   onBlurTypeChange,
 }: BlurTypeToggleProps) {
@@ -26,12 +24,11 @@ export function BlurTypeToggle({
       <div className="flex gap-1">
         <button
           type="button"
-          disabled={!canEditBlurType}
           onClick={() => onBlurTypeChange('normal')}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
             displayedBlurType === 'normal'
               ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:hover:bg-secondary'
+              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
           }`}
         >
           <Droplets className="h-3 w-3" />
@@ -39,12 +36,11 @@ export function BlurTypeToggle({
         </button>
         <button
           type="button"
-          disabled={!canEditBlurType}
           onClick={() => onBlurTypeChange('pixelated')}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
             displayedBlurType === 'pixelated'
               ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:hover:bg-secondary'
+              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
           }`}
         >
           <Grid3X3 className="h-3 w-3" />

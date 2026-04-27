@@ -8,6 +8,8 @@ import {useCanvasInteractions} from '@/features/editor/hooks/use-canvas-interact
 import {BlurOutlineOverlay} from './blur-outline-overlay';
 import {BrushCursor} from './brush-cursor';
 
+const CANVAS_BORDER_WIDTH = 4;
+
 interface EditorCanvasRootProps {
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
   onSelectedStrokeIndicesChange?: (indices: number[]) => void;
@@ -81,6 +83,8 @@ export function EditorCanvasRoot({
   const scale = effectiveZoom / 100;
   const canvasWidth = imageWidth || 800;
   const canvasHeight = imageHeight || 600;
+  const renderedCanvasWidth = canvasWidth * scale;
+  const renderedCanvasHeight = canvasHeight * scale;
   const panRef = useRef({x: panX, y: panY});
   const allStrokes = useMemo(
     () => (currentStroke ? [...blurStrokes, currentStroke] : blurStrokes),
@@ -215,58 +219,69 @@ export function EditorCanvasRoot({
       >
         <div
           style={{
-            width: canvasWidth * scale,
-            height: canvasHeight * scale,
+            width: renderedCanvasWidth + CANVAS_BORDER_WIDTH * 2,
+            height: renderedCanvasHeight + CANVAS_BORDER_WIDTH * 2,
             position: 'relative',
           }}
         >
           <canvas
             ref={canvasRef}
-            className="border-foreground block border-4 shadow-[8px_8px_0_0_rgba(0,0,0,0.72)]"
+            className="border-foreground box-content block border-4 shadow-[8px_8px_0_0_rgba(0,0,0,0.72)]"
             style={{
-              width: '100%',
-              height: '100%',
+              width: renderedCanvasWidth,
+              height: renderedCanvasHeight,
               cursor: canvasCursor,
               imageRendering: zoom > 200 ? 'pixelated' : 'auto',
             }}
           />
 
-          {image2 && splitHandlePoint ? (
-            <div
-              data-testid="split-drag-handle"
-              aria-hidden="true"
-              className="border-foreground bg-primary pointer-events-none absolute border-2 shadow-[2px_2px_0_0_rgba(0,0,0,0.7)]"
-              style={{
-                width: 14,
-                height: 14,
-                left: splitHandlePoint.x * scale,
-                top: splitHandlePoint.y * scale,
-                transform: 'translate(-50%, -50%)',
-              }}
+          <div
+            data-testid="canvas-coordinate-layer"
+            className="pointer-events-none absolute"
+            style={{
+              left: CANVAS_BORDER_WIDTH,
+              top: CANVAS_BORDER_WIDTH,
+              width: renderedCanvasWidth,
+              height: renderedCanvasHeight,
+            }}
+          >
+            {image2 && splitHandlePoint ? (
+              <div
+                data-testid="split-drag-handle"
+                aria-hidden="true"
+                className="border-foreground bg-primary pointer-events-none absolute border-2 shadow-[2px_2px_0_0_rgba(0,0,0,0.7)]"
+                style={{
+                  width: 14,
+                  height: 14,
+                  left: splitHandlePoint.x * scale,
+                  top: splitHandlePoint.y * scale,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+            ) : null}
+
+            <BlurOutlineOverlay
+              visible={shouldShowOverlay}
+              strokes={overlayStrokes}
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
+              selectedStrokeIndices={selectedStrokeIndices}
+              marqueeRect={marqueeRect}
+              showResizeHandles={isSelectTool && selectedStrokeIndices.length === 1}
+              showResizeHandlesForAll={isSelectTool}
+              scale={scale}
+              forceDashedStyle={effectiveShowOutlines}
             />
-          ) : null}
 
-          <BlurOutlineOverlay
-            visible={shouldShowOverlay}
-            strokes={overlayStrokes}
-            canvasWidth={canvasWidth}
-            canvasHeight={canvasHeight}
-            selectedStrokeIndices={selectedStrokeIndices}
-            marqueeRect={marqueeRect}
-            showResizeHandles={isSelectTool && selectedStrokeIndices.length === 1}
-            showResizeHandlesForAll={isSelectTool}
-            scale={scale}
-            forceDashedStyle={effectiveShowOutlines}
-          />
-
-          <BrushCursor
-            cursorPos={cursorPos}
-            isPanning={isPanning}
-            isBlurTool={isBlurTool}
-            isAreaMode={isBlurAreaMode}
-            brushRadius={brushRadius}
-            scale={scale}
-          />
+            <BrushCursor
+              cursorPos={cursorPos}
+              isPanning={isPanning}
+              isBlurTool={isBlurTool}
+              isAreaMode={isBlurAreaMode}
+              brushRadius={brushRadius}
+              scale={scale}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -39,7 +39,7 @@ describe('EditorSidebar blur settings behavior', () => {
     detectCustomTextInImageMock.mockReset();
   });
 
-  it('keeps blur section controls active in drag mode while disabling blur inputs', async () => {
+  it('keeps all blur controls active in drag mode', async () => {
     const user = userEvent.setup();
     useEditorStore.setState({
       activeTool: 'drag',
@@ -58,8 +58,10 @@ describe('EditorSidebar blur settings behavior', () => {
 
     renderSidebar();
 
-    expect(screen.getByRole('button', {name: /normal/i})).toBeDisabled();
-    expect(screen.getByRole('button', {name: /pixelated/i})).toBeDisabled();
+    expect(screen.getByRole('button', {name: /normal/i})).toBeEnabled();
+    expect(screen.getByRole('button', {name: /pixelated/i})).toBeEnabled();
+    await user.click(screen.getByRole('button', {name: /pixelated/i}));
+    expect(useEditorStore.getState().blurType).toBe('pixelated');
 
     await user.click(screen.getByRole('button', {name: /toggle blur outlines/i}));
     expect(useEditorStore.getState().showBlurOutlines).toBe(true);
@@ -72,11 +74,11 @@ describe('EditorSidebar blur settings behavior', () => {
     fireEvent.keyDown(radiusSlider, {key: 'ArrowRight'});
 
     const state = useEditorStore.getState();
-    expect(state.brushStrength).toBe(10);
-    expect(state.brushRadius).toBe(20);
+    expect(state.brushStrength).toBe(11);
+    expect(state.brushRadius).toBe(21);
   });
 
-  it('disables blur type and strength edits in select mode with no selection', async () => {
+  it('allows blur type and strength edits in select mode with no selection', async () => {
     const user = userEvent.setup();
     useEditorStore.setState({
       activeTool: 'select',
@@ -95,20 +97,21 @@ describe('EditorSidebar blur settings behavior', () => {
     renderSidebar([]);
 
     const pixelatedButton = screen.getByRole('button', {name: /pixelated/i});
-    expect(screen.getByRole('button', {name: /normal/i})).toBeDisabled();
-    expect(pixelatedButton).toBeDisabled();
+    expect(screen.getByRole('button', {name: /normal/i})).toBeEnabled();
+    expect(pixelatedButton).toBeEnabled();
 
     await user.click(pixelatedButton);
-    expect(useEditorStore.getState().blurType).toBe('normal');
+    expect(useEditorStore.getState().blurType).toBe('pixelated');
     expect(useEditorStore.getState().blurStrokes[0].blurType).toBe('normal');
 
     const [strengthSlider] = screen.getAllByRole('slider');
     fireEvent.keyDown(strengthSlider, {key: 'ArrowRight'});
-    expect(useEditorStore.getState().brushStrength).toBe(10);
+    expect(useEditorStore.getState().brushStrength).toBe(11);
     expect(useEditorStore.getState().blurStrokes[0].strength).toBe(11);
   });
 
-  it('forces blur outlines toggle on and disables it in select mode', () => {
+  it('keeps blur outlines toggle controllable in select mode', async () => {
+    const user = userEvent.setup();
     useEditorStore.setState({
       activeTool: 'select',
       showBlurOutlines: false,
@@ -117,11 +120,14 @@ describe('EditorSidebar blur settings behavior', () => {
     renderSidebar([]);
 
     const outlinesToggle = screen.getByRole('button', {name: /toggle blur outlines/i});
-    expect(outlinesToggle).toBeDisabled();
-    expect(outlinesToggle).toHaveAttribute('aria-pressed', 'true');
+    expect(outlinesToggle).toBeEnabled();
+    expect(outlinesToggle).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(outlinesToggle);
+    expect(useEditorStore.getState().showBlurOutlines).toBe(true);
   });
 
-  it('disables radius input in area mode and temporarily enables it with shift', () => {
+  it('keeps radius input active in area mode and keeps sidebar mode independent of shift', () => {
     useEditorStore.setState({
       activeTool: 'blur',
       blurStrokeShape: 'box',
@@ -140,18 +146,18 @@ describe('EditorSidebar blur settings behavior', () => {
 
     const [, radiusSliderWhenShiftOff] = screen.getAllByRole('slider');
     fireEvent.keyDown(radiusSliderWhenShiftOff, {key: 'ArrowRight'});
-    expect(useEditorStore.getState().brushRadius).toBe(24);
+    expect(useEditorStore.getState().brushRadius).toBe(25);
 
     firstRender.unmount();
     useEditorStore.setState({isShiftPressed: true});
     const secondRender = renderSidebar([]);
 
-    expect(screen.getByRole('button', {name: /brush/i})).toHaveClass('bg-primary');
-    expect(screen.getByRole('button', {name: /area/i})).not.toHaveClass('bg-primary');
+    expect(screen.getByRole('button', {name: /area/i})).toHaveClass('bg-primary');
+    expect(screen.getByRole('button', {name: /brush/i})).not.toHaveClass('bg-primary');
 
     const [, radiusSliderWhenShiftOn] = screen.getAllByRole('slider');
     fireEvent.keyDown(radiusSliderWhenShiftOn, {key: 'ArrowRight'});
-    expect(useEditorStore.getState().brushRadius).toBe(25);
+    expect(useEditorStore.getState().brushRadius).toBe(26);
 
     secondRender.unmount();
     useEditorStore.setState({isShiftPressed: false});
@@ -222,10 +228,10 @@ describe('EditorSidebar blur settings behavior', () => {
     expect(useEditorStore.getState().blurStrokes[0].blurType).toBe('normal');
     expect(useEditorStore.getState().history.length).toBe(historyBeforeType + 1);
 
-    const radiusBefore = useEditorStore.getState().brushRadius;
     const [, radiusSlider] = screen.getAllByRole('slider');
     fireEvent.keyDown(radiusSlider, {key: 'ArrowRight'});
-    expect(useEditorStore.getState().brushRadius).toBe(radiusBefore);
+    expect(useEditorStore.getState().blurStrokes[1].radius).toBe(13);
+    expect(useEditorStore.getState().blurStrokes[0].radius).toBe(10);
 
     const historyBeforeStrength = useEditorStore.getState().history.length;
     const [strengthSlider] = screen.getAllByRole('slider');

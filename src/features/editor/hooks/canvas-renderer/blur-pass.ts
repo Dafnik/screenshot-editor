@@ -8,6 +8,20 @@ interface BlurPassRefs {
   pixelScratchRef: MutableRefObject<HTMLCanvasElement | null>;
 }
 
+const NORMAL_BLUR_MIN_PX = 0.8;
+const NORMAL_BLUR_MAX_PX = 14;
+const NORMAL_BLUR_MAX_STRENGTH = 30;
+const NORMAL_BLUR_CURVE = 1.65;
+
+export function getNormalBlurAmount(strength: number): number {
+  const clampedStrength = Math.max(1, Math.min(NORMAL_BLUR_MAX_STRENGTH, strength));
+  const normalizedStrength = clampedStrength / NORMAL_BLUR_MAX_STRENGTH;
+  return (
+    NORMAL_BLUR_MIN_PX +
+    (NORMAL_BLUR_MAX_PX - NORMAL_BLUR_MIN_PX) * Math.pow(normalizedStrength, NORMAL_BLUR_CURVE)
+  );
+}
+
 export function applyBlurToCanvas(
   ctx: CanvasRenderingContext2D,
   strokes: BlurStroke[],
@@ -86,7 +100,7 @@ export function applyBlurToCanvas(
       ctx.drawImage(pixelScratchCanvas, 0, 0, sw, sh, 0, 0, width, height);
       ctx.imageSmoothingEnabled = true;
     } else {
-      const blurAmount = stroke.strength * 2;
+      const blurAmount = getNormalBlurAmount(stroke.strength);
       blurScratchCtx.clearRect(0, 0, width, height);
       blurScratchCtx.filter = `blur(${blurAmount}px)`;
       blurScratchCtx.drawImage(ctx.canvas, 0, 0);

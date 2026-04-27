@@ -1,5 +1,6 @@
 import {getSplitHandlePoint, getSplitRatioFromPoint} from '@/features/editor/lib/split-geometry';
 import type {SplitDirection} from '@/features/editor/state/types';
+import {getCanvasContentClientRect} from './canvas-content-rect';
 
 interface SplitDragState {
   image2: string | null;
@@ -16,7 +17,9 @@ export function isPointerNearSplitHandle(
 ): boolean {
   if (!canvas || !state.image2 || canvas.width <= 0 || canvas.height <= 0) return false;
 
-  const rect = canvas.getBoundingClientRect();
+  const rect = getCanvasContentClientRect(canvas);
+  if (!rect) return false;
+
   const handlePoint = getSplitHandlePoint(
     canvas.width,
     canvas.height,

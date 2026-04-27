@@ -14,16 +14,10 @@ interface BlurSettingsSectionProps {
   radiusTooltip: string;
   strengthTooltip: string;
   outlinesTogglePressed: boolean;
-  outlinesForcedOn: boolean;
-  showBlurOutlines: boolean;
-  canEditBlurMode: boolean;
-  canEditBlurType: boolean;
-  canEditStrength: boolean;
-  canEditRadius: boolean;
   blurStrokeShape: BlurStrokeShape;
   displayedBlurType: BlurType;
   displayedStrength: number;
-  brushRadius: number;
+  displayedRadius: number;
   onBlurStrokeShapeChange: (nextShape: BlurStrokeShape) => void;
   onToggleOutlines: () => void;
   onClearBlurStrokes: () => void;
@@ -31,6 +25,7 @@ interface BlurSettingsSectionProps {
   onStrengthChange: (nextStrength: number) => void;
   onStrengthCommit: (nextStrength: number) => void;
   onRadiusChange: (value: number) => void;
+  onRadiusCommit: (value: number) => void;
   onAutoBlurEmails: () => void;
   onAutoBlurPhoneNumbers: () => void;
   onAutoBlurCustomText: (text: string) => void;
@@ -57,16 +52,10 @@ export function BlurSettingsSection({
   radiusTooltip,
   strengthTooltip,
   outlinesTogglePressed,
-  outlinesForcedOn,
-  showBlurOutlines,
-  canEditBlurMode,
-  canEditBlurType,
-  canEditStrength,
-  canEditRadius,
   blurStrokeShape,
   displayedBlurType,
   displayedStrength,
-  brushRadius,
+  displayedRadius,
   onBlurStrokeShapeChange,
   onToggleOutlines,
   onClearBlurStrokes,
@@ -74,6 +63,7 @@ export function BlurSettingsSection({
   onStrengthChange,
   onStrengthCommit,
   onRadiusChange,
+  onRadiusCommit,
   onAutoBlurEmails,
   onAutoBlurPhoneNumbers,
   onAutoBlurCustomText,
@@ -107,7 +97,6 @@ export function BlurSettingsSection({
               size="icon"
               aria-label="Toggle blur outlines"
               aria-pressed={outlinesTogglePressed}
-              disabled={outlinesForcedOn}
               onClick={onToggleOutlines}
               className="h-7 w-7"
             >
@@ -142,14 +131,12 @@ export function BlurSettingsSection({
       <div className="space-y-4">
         <BlurModeToggle
           modeTooltip={modeTooltip}
-          canEditBlurMode={canEditBlurMode}
           blurStrokeShape={blurStrokeShape}
           onBlurStrokeShapeChange={onBlurStrokeShapeChange}
         />
 
         <BlurTypeToggle
           blurTypeTooltip={blurTypeTooltip}
-          canEditBlurType={canEditBlurType}
           displayedBlurType={displayedBlurType}
           onBlurTypeChange={onBlurTypeChange}
         />
@@ -164,19 +151,20 @@ export function BlurSettingsSection({
           min={1}
           max={30}
           step={1}
-          disabled={!canEditStrength}
+          disabled={false}
         />
 
         <LabeledSliderControl
           label="Radius"
           tooltip={radiusTooltip}
-          valueText={`${brushRadius}px`}
-          value={brushRadius}
+          valueText={`${displayedRadius}px`}
+          value={displayedRadius}
           onValueChange={onRadiusChange}
+          onValueCommit={onRadiusCommit}
           min={5}
           max={100}
           step={1}
-          disabled={!canEditRadius}
+          disabled={false}
         />
 
         <ShortcutTooltip content="Reset all blurs">

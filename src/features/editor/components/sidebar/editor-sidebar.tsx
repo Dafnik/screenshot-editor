@@ -13,17 +13,16 @@ interface EditorSidebarProps {
 
 export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
   const pendingSelectedStrengthHistoryRef = useRef(false);
+  const pendingSelectedRadiusHistoryRef = useRef(false);
 
   const image1 = useEditorStore((state) => state.image1);
   const image2 = useEditorStore((state) => state.image2);
   const imageWidth = useEditorStore((state) => state.imageWidth);
   const imageHeight = useEditorStore((state) => state.imageHeight);
-  const activeTool = useEditorStore((state) => state.activeTool);
   const blurType = useEditorStore((state) => state.blurType);
   const blurStrokeShape = useEditorStore((state) => state.blurStrokeShape);
   const brushRadius = useEditorStore((state) => state.brushRadius);
   const brushStrength = useEditorStore((state) => state.brushStrength);
-  const isShiftPressed = useEditorStore((state) => state.isShiftPressed);
   const blurStrokes = useEditorStore((state) => state.blurStrokes);
   const splitRatio = useEditorStore((state) => state.splitRatio);
   const splitDirection = useEditorStore((state) => state.splitDirection);
@@ -56,25 +55,13 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
       .filter((index) => index >= 0 && index < blurStrokes.length);
   }, [blurStrokes.length, selectedStrokeIndices]);
 
-  const isSelectToolWithSelection =
-    activeTool === 'select' && validSelectedStrokeIndices.length > 0;
-  const effectiveBlurStrokeShape =
-    activeTool === 'blur' && isShiftPressed
-      ? blurStrokeShape === 'brush'
-        ? 'box'
-        : 'brush'
-      : blurStrokeShape;
-  const canEditBlurMode = activeTool === 'blur';
-  const canEditBlurType = activeTool === 'blur' || isSelectToolWithSelection;
-  const canEditStrength = activeTool === 'blur' || isSelectToolWithSelection;
-  const canEditRadius = activeTool === 'blur' && effectiveBlurStrokeShape === 'brush';
-  const outlinesForcedOn = activeTool === 'select';
-  const outlinesTogglePressed = outlinesForcedOn || showBlurOutlines;
-  const selectedSourceStroke = isSelectToolWithSelection
+  const hasSelectedStrokes = validSelectedStrokeIndices.length > 0;
+  const selectedSourceStroke = hasSelectedStrokes
     ? (blurStrokes[validSelectedStrokeIndices[0]] ?? null)
     : null;
   const displayedBlurType = selectedSourceStroke?.blurType ?? blurType;
   const displayedStrength = selectedSourceStroke?.strength ?? brushStrength;
+  const displayedRadius = selectedSourceStroke?.radius ?? brushRadius;
 
   const autoBlur = useAutoBlurController({
     image1,
@@ -90,12 +77,11 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
     appendBlurStrokes,
     setShowBlurOutlines,
   });
-  const autoBlurDisabled =
-    !autoBlur.canAutoBlur || activeTool !== 'blur' || autoBlur.isAutoBlurPending;
+  const autoBlurDisabled = !autoBlur.canAutoBlur || autoBlur.isAutoBlurPending;
 
   const handleBlurTypeChange = useCallback(
     (nextType: BlurType) => {
-      if (isSelectToolWithSelection) {
+      if (hasSelectedStrokes) {
         updateBlurStrokesAtIndices(
           validSelectedStrokeIndices,
           {blurType: nextType},
@@ -103,22 +89,14 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
         );
         return;
       }
-      if (activeTool === 'blur') {
-        setBlurType(nextType);
-      }
+      setBlurType(nextType);
     },
-    [
-      activeTool,
-      isSelectToolWithSelection,
-      setBlurType,
-      updateBlurStrokesAtIndices,
-      validSelectedStrokeIndices,
-    ],
+    [hasSelectedStrokes, setBlurType, updateBlurStrokesAtIndices, validSelectedStrokeIndices],
   );
 
   const handleStrengthChange = useCallback(
     (nextStrength: number) => {
-      if (isSelectToolWithSelection) {
+      if (hasSelectedStrokes) {
         const changed = updateBlurStrokesAtIndices(
           validSelectedStrokeIndices,
           {strength: nextStrength},
@@ -129,22 +107,17 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
         }
         return;
       }
-      if (activeTool === 'blur') {
-        setBrushStrength(nextStrength);
-      }
+      setBrushStrength(nextStrength);
     },
-    [
-      activeTool,
-      isSelectToolWithSelection,
-      setBrushStrength,
-      updateBlurStrokesAtIndices,
-      validSelectedStrokeIndices,
-    ],
+    [hasSelectedStrokes, setBrushStrength, updateBlurStrokesAtIndices, validSelectedStrokeIndices],
   );
 
   const handleStrengthCommit = useCallback(
     (nextStrength: number) => {
-      if (!isSelectToolWithSelection) return;
+      if (!hasSelectedStrokes) {
+        setBrushStrength(nextStrength);
+        return;
+      }
 
       const changed = updateBlurStrokesAtIndices(
         validSelectedStrokeIndices,
@@ -161,18 +134,68 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
       }
     },
     [
-      isSelectToolWithSelection,
+      hasSelectedStrokes,
       pushHistorySnapshot,
+      setBrushStrength,
+      updateBlurStrokesAtIndices,
+      validSelectedStrokeIndices,
+    ],
+  );
+
+  const handleRadiusChange = useCallback(
+    (nextRadius: number) => {
+      if (hasSelectedStrokes) {
+        const changed = updateBlurStrokesAtIndices(
+          validSelectedStrokeIndices,
+          {radius: nextRadius},
+          {commitHistory: false},
+        );
+        if (changed) {
+          pendingSelectedRadiusHistoryRef.current = true;
+        }
+        return;
+      }
+      setBrushRadius(nextRadius);
+    },
+    [hasSelectedStrokes, setBrushRadius, updateBlurStrokesAtIndices, validSelectedStrokeIndices],
+  );
+
+  const handleRadiusCommit = useCallback(
+    (nextRadius: number) => {
+      if (!hasSelectedStrokes) {
+        setBrushRadius(nextRadius);
+        return;
+      }
+
+      const changed = updateBlurStrokesAtIndices(
+        validSelectedStrokeIndices,
+        {radius: nextRadius},
+        {commitHistory: false},
+      );
+      if (changed) {
+        pendingSelectedRadiusHistoryRef.current = true;
+      }
+
+      if (pendingSelectedRadiusHistoryRef.current) {
+        pushHistorySnapshot();
+        pendingSelectedRadiusHistoryRef.current = false;
+      }
+    },
+    [
+      hasSelectedStrokes,
+      pushHistorySnapshot,
+      setBrushRadius,
       updateBlurStrokesAtIndices,
       validSelectedStrokeIndices,
     ],
   );
 
   useEffect(() => {
-    if (!isSelectToolWithSelection) {
+    if (!hasSelectedStrokes) {
       pendingSelectedStrengthHistoryRef.current = false;
+      pendingSelectedRadiusHistoryRef.current = false;
     }
-  }, [isSelectToolWithSelection]);
+  }, [hasSelectedStrokes]);
 
   return (
     <aside
@@ -185,24 +208,19 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
         outlinesTooltip={outlinesTooltip}
         radiusTooltip={radiusTooltip}
         strengthTooltip={strengthTooltip}
-        outlinesTogglePressed={outlinesTogglePressed}
-        outlinesForcedOn={outlinesForcedOn}
-        showBlurOutlines={showBlurOutlines}
-        canEditBlurMode={canEditBlurMode}
-        canEditBlurType={canEditBlurType}
-        canEditStrength={canEditStrength}
-        canEditRadius={canEditRadius}
-        blurStrokeShape={effectiveBlurStrokeShape}
+        outlinesTogglePressed={showBlurOutlines}
+        blurStrokeShape={blurStrokeShape}
         displayedBlurType={displayedBlurType}
         displayedStrength={displayedStrength}
-        brushRadius={brushRadius}
+        displayedRadius={displayedRadius}
         onBlurStrokeShapeChange={setBlurStrokeShape}
         onToggleOutlines={() => setShowBlurOutlines(!showBlurOutlines)}
         onClearBlurStrokes={clearBlurStrokes}
         onBlurTypeChange={handleBlurTypeChange}
         onStrengthChange={handleStrengthChange}
         onStrengthCommit={handleStrengthCommit}
-        onRadiusChange={setBrushRadius}
+        onRadiusChange={handleRadiusChange}
+        onRadiusCommit={handleRadiusCommit}
         onAutoBlurEmails={autoBlur.handleAutoBlurEmails}
         onAutoBlurPhoneNumbers={autoBlur.handleAutoBlurPhoneNumbers}
         onAutoBlurCustomText={autoBlur.handleAutoBlurCustomText}

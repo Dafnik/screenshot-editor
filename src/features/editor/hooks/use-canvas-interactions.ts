@@ -7,6 +7,7 @@ import {
   RESIZE_HANDLE_HIT_SIZE_PX,
   SPLIT_HANDLE_HIT_RADIUS_PX,
 } from './canvas-interactions/constants';
+import {getCanvasContentClientRect} from './canvas-interactions/canvas-content-rect';
 import {
   beginPointerSession,
   cancelPointerSessionIfNeeded,
@@ -45,8 +46,8 @@ export function useCanvasInteractions({canvasRef, containerRef}: UseCanvasIntera
       const canvas = canvasRef.current;
       if (!canvas) return {x: 0, y: 0};
 
-      const rect = canvas.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return {x: 0, y: 0};
+      const rect = getCanvasContentClientRect(canvas);
+      if (!rect) return {x: 0, y: 0};
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
 
@@ -62,8 +63,8 @@ export function useCanvasInteractions({canvasRef, containerRef}: UseCanvasIntera
     const canvas = canvasRef.current;
     if (!canvas) return RESIZE_HANDLE_HIT_SIZE_PX;
 
-    const rect = canvas.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return RESIZE_HANDLE_HIT_SIZE_PX;
+    const rect = getCanvasContentClientRect(canvas);
+    if (!rect) return RESIZE_HANDLE_HIT_SIZE_PX;
 
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -87,7 +88,9 @@ export function useCanvasInteractions({canvasRef, containerRef}: UseCanvasIntera
       const canvas = canvasRef.current;
       if (!canvas) return false;
 
-      const rect = canvas.getBoundingClientRect();
+      const rect = getCanvasContentClientRect(canvas);
+      if (!rect) return false;
+
       return (
         clientX >= rect.left &&
         clientX <= rect.right &&

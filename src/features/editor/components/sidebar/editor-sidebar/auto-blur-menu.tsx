@@ -97,23 +97,25 @@ export function AutoBlurMenu({
     pressed: boolean;
     onToggle: () => void;
   }) => (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={pressed}
-      onClick={onToggle}
-      className="border-border hover:bg-secondary/70 flex h-8 w-8 items-center justify-center border-2 transition-colors"
-    >
-      <span
-        className={`flex h-4 w-4 items-center justify-center border ${
-          pressed
-            ? 'bg-primary/15 border-primary text-primary'
-            : 'border-border bg-background text-transparent'
-        }`}
+    <ShortcutTooltip content="Run this auto blur rule automatically when a document is loaded.">
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={pressed}
+        onClick={onToggle}
+        className="hover:bg-secondary/70 flex h-8 w-8 items-center justify-center transition-colors"
       >
-        <Check className="h-3 w-3" />
-      </span>
-    </button>
+        <span
+          className={`flex h-4 w-4 items-center justify-center border ${
+            pressed
+              ? 'bg-primary/15 border-primary text-primary'
+              : 'border-border bg-background text-transparent'
+          }`}
+        >
+          <Check className="h-3 w-3" />
+        </span>
+      </button>
+    </ShortcutTooltip>
   );
 
   const handleAutoBlurEmails = () => {

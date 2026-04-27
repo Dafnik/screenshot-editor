@@ -98,6 +98,25 @@ describe('EditorSidebar shortcut tooltips', () => {
     ).toBeInTheDocument();
   });
 
+  it('explains auto-blur apply-on-load checkboxes on hover', async () => {
+    useEditorStore.setState({
+      image1: 'data:image/png;base64,xyz',
+      imageWidth: 200,
+      imageHeight: 100,
+    });
+    const user = userEvent.setup();
+    renderEditorLayout();
+
+    await user.click(screen.getByRole('button', {name: /open auto blur menu/i}));
+    await user.hover(screen.getByRole('button', {name: /apply email auto blur on document load/i}));
+
+    expect(
+      await screen.findByRole('tooltip', {
+        name: 'Run this auto blur rule automatically when a document is loaded.',
+      }),
+    ).toBeInTheDocument();
+  });
+
   it('shows radius tooltip on label', async () => {
     useEditorStore.setState({activeTool: 'blur'});
     const user = userEvent.setup();
