@@ -1,6 +1,6 @@
 import {render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {ResetProjectModal} from '@/features/editor/components/modals/reset-project-modal';
 import {RESET_PROJECT_SKIP_CONFIRMATION_STORAGE_KEY} from '@/features/editor/state/reset-project-confirmation-storage';
 import {useEditorStore} from '@/features/editor/state/use-editor-store';
@@ -22,6 +22,7 @@ describe('ResetProjectModal', () => {
 
   it('resets the project and persists skip preference when confirmed', async () => {
     const user = userEvent.setup();
+    const onConfirmNewProject = vi.fn();
     useEditorStore.setState({
       image1: 'img-1',
       image2: 'img-2',
@@ -29,7 +30,7 @@ describe('ResetProjectModal', () => {
       showResetProjectModal: true,
     });
 
-    render(<ResetProjectModal />);
+    render(<ResetProjectModal onConfirmNewProject={onConfirmNewProject} />);
 
     await user.click(
       screen.getByRole('button', {name: /skip reset project confirmation next time/i}),
@@ -40,6 +41,7 @@ describe('ResetProjectModal', () => {
     expect(useEditorStore.getState().isEditing).toBe(false);
     expect(localStorage.getItem(RESET_PROJECT_SKIP_CONFIRMATION_STORAGE_KEY)).toBe('1');
     expect(screen.queryByText('Start a New Project?')).toBeNull();
+    expect(onConfirmNewProject).toHaveBeenCalledTimes(1);
   });
 
   it('cancels reset and closes modal', async () => {

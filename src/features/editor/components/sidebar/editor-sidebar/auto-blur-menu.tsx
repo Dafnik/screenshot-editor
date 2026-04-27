@@ -1,15 +1,18 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {AtSign, Check, Loader2, Phone, Type, X} from 'lucide-react';
+import {AtSign, Check, Droplets, Grid3X3, Loader2, Phone, Type, X} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Label} from '@/components/ui/label';
 import {Slider} from '@/components/ui/slider';
 import {ShortcutTooltip} from '@/features/editor/components/common/shortcut-tooltip';
 import {OPEN_AUTO_BLUR_MENU_EVENT} from '@/features/editor/lib/keyboard';
+import type {BlurType} from '@/features/editor/state/types';
 
 interface AutoBlurMenuProps {
   autoBlurTooltip: string;
   autoBlurDisabled: boolean;
   isAutoBlurPending: boolean;
+  autoBlurType: BlurType;
+  onAutoBlurTypeChange: (nextType: BlurType) => void;
   autoBlurStrength: number;
   onAutoBlurStrengthChange: (nextStrength: number) => void;
   onAutoBlurEmails: () => void;
@@ -29,6 +32,8 @@ export function AutoBlurMenu({
   autoBlurTooltip,
   autoBlurDisabled,
   isAutoBlurPending,
+  autoBlurType,
+  onAutoBlurTypeChange,
   autoBlurStrength,
   onAutoBlurStrengthChange,
   onAutoBlurEmails,
@@ -174,6 +179,41 @@ export function AutoBlurMenu({
             className="bg-background border-border absolute right-0 z-20 mt-1 w-64 border-2 p-2 shadow-[3px_3px_0_0_rgba(0,0,0,0.68)]"
           >
             <div className="border-border mb-2 border-b pb-2">
+              <div className="mb-2">
+                <Label className="text-muted-foreground mb-1 block text-[11px]">
+                  Auto blur type
+                </Label>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    aria-label="Set auto blur type to normal"
+                    disabled={isAutoBlurPending}
+                    onClick={() => onAutoBlurTypeChange('normal')}
+                    className={`flex h-7 flex-1 items-center justify-center gap-1.5 rounded px-2 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                      autoBlurType === 'normal'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    <Droplets className="h-3 w-3" />
+                    Normal
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Set auto blur type to pixelated"
+                    disabled={isAutoBlurPending}
+                    onClick={() => onAutoBlurTypeChange('pixelated')}
+                    className={`flex h-7 flex-1 items-center justify-center gap-1.5 rounded px-2 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                      autoBlurType === 'pixelated'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    <Grid3X3 className="h-3 w-3" />
+                    Pixelated
+                  </button>
+                </div>
+              </div>
               <div className="mb-1 flex items-center justify-between">
                 <Label className="text-muted-foreground text-[11px]">Auto blur strength</Label>
                 <span className="text-muted-foreground text-[11px] tabular-nums">

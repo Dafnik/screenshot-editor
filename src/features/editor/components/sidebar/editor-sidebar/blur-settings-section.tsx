@@ -30,6 +30,8 @@ interface BlurSettingsSectionProps {
   onAutoBlurPhoneNumbers: () => void;
   onAutoBlurCustomText: (text: string) => void;
   onDeleteAutoBlurCustomText: (text: string) => void;
+  autoBlurType: BlurType;
+  onAutoBlurTypeChange: (nextType: BlurType) => void;
   autoBlurStrength: number;
   onAutoBlurStrengthChange: (nextStrength: number) => void;
   autoBlurApplyOnLoadEmail: boolean;
@@ -68,6 +70,8 @@ export function BlurSettingsSection({
   onAutoBlurPhoneNumbers,
   onAutoBlurCustomText,
   onDeleteAutoBlurCustomText,
+  autoBlurType,
+  onAutoBlurTypeChange,
   autoBlurStrength,
   onAutoBlurStrengthChange,
   autoBlurApplyOnLoadEmail,
@@ -107,6 +111,8 @@ export function BlurSettingsSection({
             autoBlurTooltip={autoBlurTooltip}
             autoBlurDisabled={autoBlurDisabled}
             isAutoBlurPending={isAutoBlurPending}
+            autoBlurType={autoBlurType}
+            onAutoBlurTypeChange={onAutoBlurTypeChange}
             autoBlurStrength={autoBlurStrength}
             onAutoBlurStrengthChange={onAutoBlurStrengthChange}
             onAutoBlurEmails={onAutoBlurEmails}

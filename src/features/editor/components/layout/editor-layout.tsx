@@ -16,6 +16,7 @@ interface EditorLayoutProps {
   onSelectSecondLightImage: () => void;
   onCancelLightSelection: () => void;
   onExportComplete?: (payload: {leaveAfterExport: boolean}) => void;
+  onNewProjectUpload?: () => void;
   isLibraryMode?: boolean;
 }
 
@@ -25,6 +26,7 @@ export function EditorLayout({
   onSelectSecondLightImage,
   onCancelLightSelection,
   onExportComplete,
+  onNewProjectUpload,
   isLibraryMode = false,
 }: EditorLayoutProps) {
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
@@ -33,7 +35,10 @@ export function EditorLayout({
   return (
     <TooltipProvider delayDuration={0} skipDelayDuration={0}>
       <div className="relative flex h-screen w-screen flex-col">
-        <EditorToolbar isLibraryMode={isLibraryMode} />
+        <EditorToolbar
+          isLibraryMode={isLibraryMode}
+          onNewProjectUpload={isLibraryMode ? undefined : onNewProjectUpload}
+        />
 
         <div className="flex flex-1 overflow-hidden">
           <EditorSidebar selectedStrokeIndices={selectedStrokeIndices} />
@@ -49,7 +54,7 @@ export function EditorLayout({
         </div>
 
         <ExportModal canvasRef={canvasEl} onExportComplete={onExportComplete} />
-        <ResetProjectModal />
+        <ResetProjectModal onConfirmNewProject={isLibraryMode ? undefined : onNewProjectUpload} />
         <ShortcutsModal />
         <LightImageSelectorModal
           onSelectFirst={onSelectFirstLightImage}

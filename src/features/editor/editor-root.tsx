@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState, type ChangeEvent} from 'react';
 import {Button} from '@/components/ui/button';
 import {DesktopOnlyPage} from '@/components/desktop-only-page';
 import {DropZone} from '@/components/drop-zone';
@@ -23,6 +23,7 @@ export function EditorRoot() {
   useEditorShortcuts();
   const [viewportWidth, setViewportWidth] = useState(getViewportWidth);
   const [activeEditorSource, setActiveEditorSource] = useState<EditorSource>(null);
+  const newProjectUploadInputRef = useRef<HTMLInputElement | null>(null);
 
   const isEditing = useEditorStore((state) => state.isEditing);
   const lightImageSide = useEditorStore((state) => state.lightImageSide);
@@ -47,16 +48,37 @@ export function EditorRoot() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleImagesLoaded = (files: File[]) => {
-    if (files.length > 2) {
-      library.analyzeLibraryFiles(files);
-      return;
-    }
+  const handleImagesLoaded = useCallback(
+    (files: File[]) => {
+      if (files.length > 2) {
+        library.analyzeLibraryFiles(files);
+        return;
+      }
 
+      library.resetForDirectMode();
+      library.setLibraryError(null);
+      directUpload.loadDirectFiles(files);
+    },
+    [directUpload, library],
+  );
+
+  const handleNewProjectUploadRequest = useCallback(() => {
     library.resetForDirectMode();
     library.setLibraryError(null);
-    directUpload.loadDirectFiles(files);
-  };
+    newProjectUploadInputRef.current?.click();
+  }, [library]);
+
+  const handleNewProjectUploadChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files ?? []).filter((file) =>
+        file.type.startsWith('image/'),
+      );
+      event.target.value = '';
+      if (files.length === 0) return;
+      handleImagesLoaded(files);
+    },
+    [handleImagesLoaded],
+  );
 
   const handleExportComplete = ({leaveAfterExport}: {leaveAfterExport: boolean}) => {
     library.markExportedPairComplete(activeEditorSource);
@@ -71,10 +93,23 @@ export function EditorRoot() {
     return <DesktopOnlyPage minWidthPx={MIN_DESKTOP_WIDTH_PX} />;
   }
 
+  const newProjectUploadInput = (
+    <input
+      ref={newProjectUploadInputRef}
+      type="file"
+      accept="image/*"
+      multiple
+      onChange={handleNewProjectUploadChange}
+      className="hidden"
+      data-testid="new-project-upload-input"
+    />
+  );
+
   if (!isEditing) {
     if (library.analysisProgress) {
       return (
         <div className="bg-background flex h-screen w-screen items-center justify-center px-4">
+          {newProjectUploadInput}
           <div className="border-border bg-card w-full max-w-lg border-2 p-6 text-center">
             <h2 className="text-foreground text-lg font-semibold">Analyzing Screenshot Library</h2>
             <p className="text-muted-foreground mt-2 text-sm">
@@ -87,33 +122,37 @@ export function EditorRoot() {
 
     if (library.librarySession) {
       return (
-        <LibraryManager
-          session={library.librarySession}
-          selectedUnmatchedImageIds={library.selectedUnmatchedImageIds}
-          onSelectUnmatchedImage={library.selectUnmatchedImage}
-          onCreateManualPair={library.createManualPair}
-          onOpenPair={library.openLibraryPair}
-          onUnpairPair={library.unpairPair}
-          onDeletePairImages={library.deletePairImages}
-          onAcceptReview={library.acceptReview}
-          onRejectReview={library.rejectReview}
-          onDeleteReviewImages={library.deleteReviewImages}
-          onDeleteUnmatchedImage={library.deleteUnmatchedImage}
-          onAddScreenshots={library.addLibraryScreenshots}
-          isAppendingScreenshots={library.isAppendingScreenshots}
-          appendProgress={library.appendProgress}
-          autoMatchThresholdPercent={library.autoMatchThresholdPercent}
-          onAutoMatchThresholdPercentChange={library.updateAutoMatchThresholdPercent}
-          errorMessage={library.libraryError}
-          onDismissError={() => library.setLibraryError(null)}
-          onClearLibrary={library.clearLibrary}
-        />
+        <>
+          {newProjectUploadInput}
+          <LibraryManager
+            session={library.librarySession}
+            selectedUnmatchedImageIds={library.selectedUnmatchedImageIds}
+            onSelectUnmatchedImage={library.selectUnmatchedImage}
+            onCreateManualPair={library.createManualPair}
+            onOpenPair={library.openLibraryPair}
+            onUnpairPair={library.unpairPair}
+            onDeletePairImages={library.deletePairImages}
+            onAcceptReview={library.acceptReview}
+            onRejectReview={library.rejectReview}
+            onDeleteReviewImages={library.deleteReviewImages}
+            onDeleteUnmatchedImage={library.deleteUnmatchedImage}
+            onAddScreenshots={library.addLibraryScreenshots}
+            isAppendingScreenshots={library.isAppendingScreenshots}
+            appendProgress={library.appendProgress}
+            autoMatchThresholdPercent={library.autoMatchThresholdPercent}
+            onAutoMatchThresholdPercentChange={library.updateAutoMatchThresholdPercent}
+            errorMessage={library.libraryError}
+            onDismissError={() => library.setLibraryError(null)}
+            onClearLibrary={library.clearLibrary}
+          />
+        </>
       );
     }
 
     if (library.libraryError) {
       return (
         <div className="bg-background flex h-screen w-screen items-center justify-center px-4">
+          {newProjectUploadInput}
           <div className="border-border bg-card w-full max-w-lg border-2 p-6">
             <h2 className="text-foreground text-lg font-semibold">Library Analysis Error</h2>
             <p className="text-muted-foreground mt-2 text-sm">{library.libraryError}</p>
@@ -127,17 +166,26 @@ export function EditorRoot() {
       );
     }
 
-    return <DropZone onImagesLoaded={handleImagesLoaded} />;
+    return (
+      <>
+        {newProjectUploadInput}
+        <DropZone onImagesLoaded={handleImagesLoaded} />
+      </>
+    );
   }
 
   return (
-    <EditorLayout
-      onAddSecondImage={directUpload.addSecondImage}
-      onSelectFirstLightImage={directUpload.selectFirstLightImage}
-      onSelectSecondLightImage={directUpload.selectSecondLightImage}
-      onCancelLightSelection={directUpload.cancelLightSelection}
-      onExportComplete={handleExportComplete}
-      isLibraryMode={activeEditorSource?.mode === 'library'}
-    />
+    <>
+      {newProjectUploadInput}
+      <EditorLayout
+        onAddSecondImage={directUpload.addSecondImage}
+        onSelectFirstLightImage={directUpload.selectFirstLightImage}
+        onSelectSecondLightImage={directUpload.selectSecondLightImage}
+        onCancelLightSelection={directUpload.cancelLightSelection}
+        onExportComplete={handleExportComplete}
+        onNewProjectUpload={handleNewProjectUploadRequest}
+        isLibraryMode={activeEditorSource?.mode === 'library'}
+      />
+    </>
   );
 }

@@ -19,9 +19,10 @@ import {useEditorStore} from '@/features/editor/state/use-editor-store';
 
 interface EditorToolbarProps {
   isLibraryMode?: boolean;
+  onNewProjectUpload?: () => void;
 }
 
-export function EditorToolbar({isLibraryMode = false}: EditorToolbarProps) {
+export function EditorToolbar({isLibraryMode = false, onNewProjectUpload}: EditorToolbarProps) {
   const zoom = useEditorStore((state) => state.zoom);
   const canUndo = useEditorStore((state) => state.canUndo);
   const canRedo = useEditorStore((state) => state.canRedo);
@@ -59,10 +60,13 @@ export function EditorToolbar({isLibraryMode = false}: EditorToolbarProps) {
   const handleNewProject = useCallback(() => {
     if (loadSkipResetProjectConfirmation()) {
       resetProject();
+      if (!isLibraryMode) {
+        onNewProjectUpload?.();
+      }
       return;
     }
     openResetProjectModal();
-  }, [openResetProjectModal, resetProject]);
+  }, [isLibraryMode, onNewProjectUpload, openResetProjectModal, resetProject]);
 
   useEffect(() => {
     setZoomInput(String(zoom));

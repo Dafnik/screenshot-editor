@@ -225,6 +225,8 @@ export function EditorSidebar({selectedStrokeIndices}: EditorSidebarProps) {
         onAutoBlurPhoneNumbers={autoBlur.handleAutoBlurPhoneNumbers}
         onAutoBlurCustomText={autoBlur.handleAutoBlurCustomText}
         onDeleteAutoBlurCustomText={autoBlur.handleDeleteAutoBlurCustomText}
+        autoBlurType={blurType}
+        onAutoBlurTypeChange={setBlurType}
         autoBlurStrength={brushStrength}
         onAutoBlurStrengthChange={setBrushStrength}
         autoBlurApplyOnLoadEmail={autoBlur.autoBlurDefaults.email}

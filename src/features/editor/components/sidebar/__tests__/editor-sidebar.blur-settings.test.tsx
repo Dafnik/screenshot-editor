@@ -372,6 +372,35 @@ describe('EditorSidebar blur settings behavior', () => {
     expect(screen.getByText('Blurred 2 detected emails.')).toBeInTheDocument();
   });
 
+  it('changes auto blur type from the auto blur panel before running detection', async () => {
+    const user = userEvent.setup();
+    useEditorStore
+      .getState()
+      .initializeEditor({image1: 'img-1', image2: null, width: 300, height: 150});
+    useEditorStore.setState({
+      blurType: 'normal',
+      brushStrength: 12,
+      brushRadius: 17,
+      blurStrokes: [],
+    });
+    detectEmailsInImageMock.mockResolvedValueOnce([
+      {text: 'one@example.com', box: {x: 40, y: 30, width: 80, height: 20}},
+    ]);
+
+    renderSidebar();
+
+    await openAutoBlurMenu(user);
+    await user.click(screen.getByRole('button', {name: /set auto blur type to pixelated/i}));
+    expect(useEditorStore.getState().blurType).toBe('pixelated');
+
+    await user.click(screen.getByRole('button', {name: /auto blur email addresses/i}));
+
+    await waitFor(() => {
+      expect(useEditorStore.getState().blurStrokes).toHaveLength(1);
+    });
+    expect(useEditorStore.getState().blurStrokes[0].blurType).toBe('pixelated');
+  });
+
   it('auto-blurs detected phone numbers', async () => {
     const user = userEvent.setup();
     useEditorStore

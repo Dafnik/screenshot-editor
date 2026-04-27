@@ -1,18 +1,19 @@
 import {act, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {EditorLayout} from '@/features/editor/components/layout/editor-layout';
 import {formatShortcutTooltip} from '@/features/editor/lib/shortcut-definitions';
 import {RESET_PROJECT_SKIP_CONFIRMATION_STORAGE_KEY} from '@/features/editor/state/reset-project-confirmation-storage';
 import {useEditorStore} from '@/features/editor/state/use-editor-store';
 
-function renderEditorLayout(isLibraryMode = false) {
+function renderEditorLayout(isLibraryMode = false, onNewProjectUpload?: () => void) {
   return render(
     <EditorLayout
       onAddSecondImage={() => {}}
       onSelectFirstLightImage={() => {}}
       onSelectSecondLightImage={() => {}}
       onCancelLightSelection={() => {}}
+      onNewProjectUpload={onNewProjectUpload}
       isLibraryMode={isLibraryMode}
     />,
   );
@@ -64,13 +65,15 @@ describe('EditorToolbar shortcut tooltips', () => {
 
   it('skips reset modal from New button when preference is enabled', async () => {
     const user = userEvent.setup();
+    const onNewProjectUpload = vi.fn();
     localStorage.setItem(RESET_PROJECT_SKIP_CONFIRMATION_STORAGE_KEY, '1');
     useEditorStore.setState({image1: 'img-1', isEditing: true});
-    renderEditorLayout();
+    renderEditorLayout(false, onNewProjectUpload);
 
     await user.click(screen.getByRole('button', {name: /new/i}));
     expect(useEditorStore.getState().image1).toBeNull();
     expect(screen.queryByText('Start a New Project?')).toBeNull();
+    expect(onNewProjectUpload).toHaveBeenCalledTimes(1);
   });
 
   it('reset settings clears skip preference so New opens confirmation modal again', async () => {

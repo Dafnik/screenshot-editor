@@ -6,7 +6,11 @@ import {useCloseOnEscape} from '@/features/editor/hooks/use-close-on-escape';
 import {useEditorStore} from '@/features/editor/state/use-editor-store';
 import {saveSkipResetProjectConfirmation} from '@/features/editor/state/reset-project-confirmation-storage';
 
-export function ResetProjectModal() {
+interface ResetProjectModalProps {
+  onConfirmNewProject?: () => void;
+}
+
+export function ResetProjectModal({onConfirmNewProject}: ResetProjectModalProps) {
   const open = useEditorStore((state) => state.showResetProjectModal);
   const closeResetProjectModal = useEditorStore((state) => state.closeResetProjectModal);
   const resetProject = useEditorStore((state) => state.resetProject);
@@ -31,7 +35,8 @@ export function ResetProjectModal() {
       saveSkipResetProjectConfirmation(true);
     }
     resetProject();
-  }, [resetProject, skipNextTime]);
+    onConfirmNewProject?.();
+  }, [onConfirmNewProject, resetProject, skipNextTime]);
 
   if (!open) return null;
 

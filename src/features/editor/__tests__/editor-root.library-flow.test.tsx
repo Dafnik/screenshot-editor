@@ -143,6 +143,32 @@ describe('EditorRoot library flow', () => {
     expect(extractFeatures).not.toHaveBeenCalled();
   });
 
+  it('opens the new project upload input after confirming reset and processes selected files', async () => {
+    const user = userEvent.setup();
+    const inputClickSpy = vi
+      .spyOn(HTMLInputElement.prototype, 'click')
+      .mockImplementation(() => undefined);
+    const {container} = render(<EditorRoot />);
+    const initialInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+    await user.upload(initialInput, createImageFile('first.png'));
+    expect(await screen.findByText('Screenshot Editor')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', {name: /^new$/i}));
+    await user.click(screen.getByRole('button', {name: 'Continue'}));
+
+    expect(inputClickSpy).toHaveBeenCalled();
+    expect(await screen.findByText('Drop screenshots here')).toBeInTheDocument();
+
+    const newProjectInput = screen.getByTestId('new-project-upload-input') as HTMLInputElement;
+    await user.upload(newProjectInput, createImageFile('second.png'));
+
+    expect(await screen.findByText('Screenshot Editor')).toBeInTheDocument();
+    expect(useEditorStore.getState().exportBaseName).toBe('second');
+
+    inputClickSpy.mockRestore();
+  });
+
   it('keeps pair upload behavior and runs luminance classification', async () => {
     render(<EditorRoot />);
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
